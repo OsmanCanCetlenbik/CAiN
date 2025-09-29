@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, Button, Image, StyleSheet, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  Button,
+  Image,
+  StyleSheet,
+  Alert,
+} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../App';
@@ -12,7 +19,10 @@ export default function UploadScreen({ navigation }: Props) {
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('İzin gerekli', 'Fotoğraf seçmek için galeri izni vermelisin.');
+      Alert.alert(
+        'İzin Gerekli',
+        'Fotoğraf seçmek için galeri izni vermelisin.'
+      );
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -36,6 +46,7 @@ export default function UploadScreen({ navigation }: Props) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Ürün Fotoğrafını Yükle</Text>
+
       {imageUri ? (
         <Image source={{ uri: imageUri }} style={styles.preview} />
       ) : (
@@ -43,12 +54,15 @@ export default function UploadScreen({ navigation }: Props) {
           <Text>Henüz görsel seçilmedi</Text>
         </View>
       )}
+
       <View style={styles.row}>
         <Button title="Fotoğraf Seç" onPress={pickImage} />
         <Button title="Devam ➜" onPress={goNext} />
       </View>
+
       <Text style={styles.hint}>
-        İpucu: Ürün tek başına ve kontrastlı bir arka planda olursa sonuçlar daha iyi olur.
+        İpucu: Ürün tek başına ve kontrastlı bir arka planda olursa sonuçlar
+        daha iyi olur.
       </Text>
     </View>
   );
@@ -57,7 +71,12 @@ export default function UploadScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, gap: 16, backgroundColor: '#fff' },
   title: { fontSize: 20, fontWeight: '600' },
-  preview: { width: '100%', aspectRatio: 1, borderRadius: 12, backgroundColor: '#f2f2f2' },
+  preview: {
+    width: '100%',
+    aspectRatio: 1,
+    borderRadius: 12,
+    backgroundColor: '#f2f2f2',
+  },
   placeholder: { alignItems: 'center', justifyContent: 'center' },
   row: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
   hint: { color: '#666' },
