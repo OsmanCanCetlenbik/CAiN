@@ -55,14 +55,15 @@ body.append('image', {
 } as any);
 
 
-    const res = await fetch(FAL_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${FAL_API_KEY}`,
-        // NOT: fetch FormData kullanınca Content-Type otomatik boundary ile set edilir; elle yazma.
-      },
-      body,
-    });
+const res = await fetch(FAL_ENDPOINT, {
+  method: 'POST',
+  headers: {
+    // ÖNEMLİ: Bearer değil, Key
+    Authorization: `Key ${FAL_API_KEY}`,
+    // FormData kullanırken Content-Type verme; boundary’i fetch ayarlar.
+  },
+  body,
+});
 
     if (!res.ok) {
       const txt = await res.text();
