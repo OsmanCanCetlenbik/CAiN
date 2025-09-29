@@ -6,23 +6,34 @@ import UploadScreen from './src/screens/UploadScreen';
 import StyleScreen from './src/screens/StyleScreen';
 import ResultsScreen from './src/screens/ResultsScreen';
 import PaywallScreen from './src/screens/PaywallScreen';
+import AuthScreen from './src/screens/AuthScreen';
+import HistoryScreen from './src/screens/HistoryScreen';
 
 import { CreditsProvider } from './src/state/CreditsContext';
+import { AuthProvider, useAuth } from './src/state/AuthContext';
+import { HistoryProvider } from './src/state/HistoryContext';
 
-export type RootStackParamList = {
-  Upload: undefined;
-  Style: { imageUri: string };
-  Results: { imageUri: string; preset: string; resultUrl?: string };
-  Paywall: undefined;
-};
+import type { RootStackParamList } from './src/types/navigation';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-export default function App() {
+function AppNavigator() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return null; // burada istersen splash gösterebilirsin
+  }
+
   return (
-    <CreditsProvider>
-      <NavigationContainer>
-        <Stack.Navigator initialRouteName="Upload">
+    <Stack.Navigator initialRouteName={user ? 'Upload' : 'Auth'}>
+      {!user ? (
+        <Stack.Screen
+          name="Auth"
+          component={AuthScreen}
+          options={{ title: 'Giriş' }}
+        />
+      ) : (
+        <>
           <Stack.Screen
             name="Upload"
             component={UploadScreen}
@@ -39,12 +50,31 @@ export default function App() {
             options={{ title: 'Sonuç' }}
           />
           <Stack.Screen
+            name="History"
+            component={HistoryScreen}
+            options={{ title: 'Geçmiş' }}
+          />
+          <Stack.Screen
             name="Paywall"
             component={PaywallScreen}
             options={{ title: 'Kredi Paketleri' }}
           />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </CreditsProvider>
+        </>
+      )}
+    </Stack.Navigator>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <CreditsProvider>
+        <HistoryProvider>
+          <NavigationContainer>
+            <AppNavigator />
+          </NavigationContainer>
+        </HistoryProvider>
+      </CreditsProvider>
+    </AuthProvider>
   );
 }

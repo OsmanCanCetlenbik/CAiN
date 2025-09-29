@@ -9,9 +9,10 @@ import {
   Alert,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../../App';
+import type { RootStackParamList } from '../types/navigation';
 import { generateImage } from '../services/falService';
 import { useCredits } from '../state/CreditsContext';
+import { useHistoryList } from '../state/HistoryContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Results'>;
 
@@ -21,6 +22,7 @@ export default function ResultsScreen({ route, navigation }: Props) {
   const [loading, setLoading] = useState(true);
 
   const { credits, loading: creditsLoading, consume } = useCredits();
+  const { add: addHistory } = useHistoryList();
 
   useEffect(() => {
     let cancelled = false;
@@ -28,10 +30,10 @@ export default function ResultsScreen({ route, navigation }: Props) {
     const run = async () => {
       if (creditsLoading) return; // krediler yüklenmeden bekle
 
-      // 1) Kredi düşür
+      // 1) Kredi kontrol + tüketim
       const ok = await consume(1);
       if (!ok) {
-        navigation.replace('Paywall'); // kredi yoksa Paywall’a yönlendir
+        navigation.replace('Paywall'); // kredi yoksa Paywall’a
         return;
       }
 
@@ -42,6 +44,14 @@ export default function ResultsScreen({ route, navigation }: Props) {
 
       if (res.ok && res.url) {
         setResultUrl(res.url);
+
+        // 3) Geçmişe kaydet
+        try {
+          await addHistory({ inputUri: imageUri, outputUri: res.url, preset });
+        } catch (e) {
+          // history hatası uygulamayı bozmasın
+          console.warn('History add error:', e);
+        }
       } else {
         Alert.alert('Üretim Hatası', res.error ?? 'Bilinmeyen hata');
       }
@@ -71,6 +81,9 @@ export default function ResultsScreen({ route, navigation }: Props) {
             <Button title="Farklı Tarz" onPress={() => navigation.goBack()} />
             <Button title="Başa Dön" onPress={() => navigation.navigate('Upload')} />
           </View>
+          <View style={{ marginTop: 8 }}>
+            <Button title="Geçmişi Gör" onPress={() => navigation.navigate('History')} />
+          </View>
         </>
       ) : (
         <>
@@ -79,17 +92,14 @@ export default function ResultsScreen({ route, navigation }: Props) {
           </View>
           <Button
             title="Tekrar Dene"
-            onPress={() =>
-              navigation.replace('Results', { imageUri, preset })
-            }
+            onPress={() => navigation.replace('Results', { imageUri, preset })}
           />
         </>
       )}
 
       <Text style={styles.note}>
-        Not: Bu ekran şu an MOCK modda placeholder gösterebilir. Gerçek üretim
-        için .env içinde MOCK_MODE=false yapıp FAL anahtar ve endpointini
-        ekleyin.
+        Not: MOCK mod açıksa placeholder gösterebilir. Gerçek üretim için .env içinde{' '}
+        <Text style={{ fontWeight: '700' }}>MOCK_MODE=false</Text> yapıp FAL giriş bilgilerini ekleyin.
       </Text>
       <Text style={{ color: '#666', marginTop: 8 }}>Mevcut kredi: {credits}</Text>
     </View>

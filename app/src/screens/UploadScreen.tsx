@@ -59,7 +59,9 @@ export default function UploadScreen({ navigation }: Props) {
         <Button title="Fotoğraf Seç" onPress={pickImage} />
         <Button title="Devam ➜" onPress={goNext} />
       </View>
-
+      <View style={{ marginTop: 8 }}>
+  <Button title="Geçmişi Gör" onPress={() => navigation.navigate('History')} />
+</View>
       <Text style={styles.hint}>
         İpucu: Ürün tek başına ve kontrastlı bir arka planda olursa sonuçlar
         daha iyi olur.
