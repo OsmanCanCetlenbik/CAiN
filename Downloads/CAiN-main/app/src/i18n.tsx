@@ -1,4 +1,5 @@
 import React from 'react';
+import type { ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export type Locale = 'tr' | 'en';
@@ -160,7 +161,7 @@ type I18nContextType = {
 
 const I18nContext = React.createContext<I18nContextType | undefined>(undefined);
 
-export function I18nProvider({ children }: { children: React.ReactNode }) {
+export function I18nProvider({ children }: { children?: ReactNode }) {
   const sys = (Intl as any)?.DateTimeFormat?.().resolvedOptions?.().locale as string | undefined;
   const fallBack: Locale = sys && sys.toLowerCase().startsWith('tr') ? 'tr' : 'en';
   const [locale, _setLocale] = React.useState<Locale>(fallBack);

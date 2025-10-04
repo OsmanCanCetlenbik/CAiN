@@ -7,6 +7,7 @@ export interface ExpoConfig {
 }
 
 export interface ConstantsType {
+  appOwnership?: string | null;
   manifest?: ConstantsManifest | null;
   manifest2?: { extra?: Record<string, any> } | null;
   expoConfig?: ExpoConfig | null;
