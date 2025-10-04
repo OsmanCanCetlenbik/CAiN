@@ -310,7 +310,17 @@ export async function generateImageToImage(opts: I2IOptions): Promise<{ resultUr
    PRESET PROMPTS (ürünü koruyarak sahne/arka plan üretimi için)
 ----------------------------------------------------------- */
 
-export const PRESET_PROMPTS: Record<string, string> = {
+const DEFAULT_NEGATIVE_PROMPT =
+  'blurry, distorted, watermark, text, people, hands, disfigured, cropped, extra limbs, logo, low quality';
+
+const DEFAULT_PROMPT =
+  'Keep the product unchanged. Create a clean studio background with soft lighting, realistic shadows and professional e-commerce quality.';
+
+const LORA_INSTRUCTION =
+  'Apply the CAiN brand LoRA aesthetics while keeping the product identical. Avoid changing logos or packaging.';
+
+const PRESET_PROMPTS_MAP: Record<string, string> = {
+  default: DEFAULT_PROMPT,
   // SEZONLUK
   christmas_table:
     'Keep the original product unchanged (shape, color, logo). Place it on an elegant Christmas dinner table, warm ambient lights, soft bokeh, pine branches and subtle ornaments in the background, shallow depth of field, professional product photography, clean composition, no people, no text, no watermark.',
@@ -341,7 +351,122 @@ export const PRESET_PROMPTS: Record<string, string> = {
     'Keep the product unchanged. Background: neon cyberpunk city hues (teal-magenta), reflective surface under product, rim light, dramatic yet clean composition, no text or people.',
   dark_mood:
     'Preserve the product. Background: dark luxury studio, single soft side light, subtle haze, premium look with glossy reflections, high-end product photography, no text, no people.',
+  luxury_showcase:
+    'Keep the product untouched. Background: glossy black showroom pedestal with focused spotlights, premium ambience, subtle gold reflections, cinematic contrast, no people, no typography.',
+  brand_lora_demo:
+    `${LORA_INSTRUCTION} Place it in a modern lifestyle scene with soft depth of field, premium color grading, no extra objects obstructing the product.`,
 };
+
+export const PRESET_PROMPTS: Record<string, string> = PRESET_PROMPTS_MAP;
+
+const PLACEHOLDER_IMAGES: Record<string, string> = {
+  christmas_table:
+    'https://images.unsplash.com/photo-1514516430032-7f40ed9863f0?auto=format&fit=crop&w=1200&q=80',
+  beach_cafe:
+    'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80',
+  minimal_office:
+    'https://images.unsplash.com/photo-1523475472560-d2df97ec485c?auto=format&fit=crop&w=1200&q=80',
+  brand_lora_demo:
+    'https://images.unsplash.com/photo-1545239351-1141bd82e8a6?auto=format&fit=crop&w=1200&q=80',
+  cozy_living_room:
+    'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80',
+  industrial_loft:
+    'https://images.unsplash.com/photo-1505691723518-36a5ac3be353?auto=format&fit=crop&w=1200&q=80',
+  marble_kitchen:
+    'https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?auto=format&fit=crop&w=1200&q=80',
+  rustic_wood_table:
+    'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?auto=format&fit=crop&w=1200&q=80',
+  botanical_studio:
+    'https://images.unsplash.com/photo-1455587734955-081b22074882?auto=format&fit=crop&w=1200&q=80',
+  neon_cyberpunk:
+    'https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?auto=format&fit=crop&w=1200&q=80',
+  dark_mood:
+    'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
+  pastel_minimal:
+    'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1200&q=80',
+  outdoor_picnic:
+    'https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?auto=format&fit=crop&w=1200&q=80',
+  luxury_showcase:
+    'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
+};
+
+const FALLBACK_PLACEHOLDER =
+  'https://images.unsplash.com/photo-1512446733611-9099a758e022?auto=format&fit=crop&w=1200&q=80';
+
+type GenerateImageParams = {
+  imageUri?: string;
+  imageUrl?: string;
+  preset: string;
+  promptOverride?: string;
+  negativePrompt?: string;
+};
+
+type GenerateImageOk = {
+  ok: true;
+  url: string;
+  debug?: { transparentUrl: string; maskUrl: string };
+};
+
+type FalErrorCode = 'FAL_EXHAUSTED_BALANCE' | 'NETWORK_ERROR' | 'UNKNOWN';
+
+type GenerateImageError = {
+  ok: false;
+  error: string;
+  errorCode?: FalErrorCode;
+};
+
+export type GenerateImageResult = GenerateImageOk | GenerateImageError;
+
+function resolvePrompt(preset: string, override?: string): string {
+  if (override) return override;
+  return PRESET_PROMPTS_MAP[preset] ?? DEFAULT_PROMPT;
+}
+
+function resolvePlaceholder(preset: string): string {
+  return PLACEHOLDER_IMAGES[preset] ?? FALLBACK_PLACEHOLDER;
+}
+
+function normalizeFalError(error: unknown): { message: string; code?: FalErrorCode } {
+  if (error instanceof Error) {
+    const msg = error.message ?? 'Unknown FAL error';
+    if (/exhausted/i.test(msg) || /balance/i.test(msg) || /402/.test(msg)) {
+      return { message: msg, code: 'FAL_EXHAUSTED_BALANCE' };
+    }
+    if (/network/i.test(msg) || /fetch failed/i.test(msg) || /TypeError/.test(error.name)) {
+      return { message: msg, code: 'NETWORK_ERROR' };
+    }
+    return { message: msg, code: 'UNKNOWN' };
+  }
+  const fallback = typeof error === 'string' ? error : 'Unknown error';
+  return { message: fallback, code: 'UNKNOWN' };
+}
+
+export function getPlaceholderForPreset(preset: string): string {
+  return resolvePlaceholder(preset);
+}
+
+export async function generateImage({
+  imageUri,
+  imageUrl,
+  preset,
+  promptOverride,
+  negativePrompt,
+}: GenerateImageParams): Promise<GenerateImageResult> {
+  try {
+    const prompt = resolvePrompt(preset, promptOverride);
+    const { resultUrl, debug } = await proInpaint({
+      imageUri,
+      imageUrl,
+      prompt,
+      negativePrompt: negativePrompt ?? DEFAULT_NEGATIVE_PROMPT,
+      outputFormat: 'png',
+    });
+    return { ok: true, url: resultUrl, debug };
+  } catch (error) {
+    const { message, code } = normalizeFalError(error);
+    return { ok: false, error: message, errorCode: code };
+  }
+}
 
 /* -----------------------------------------------------------
    KULLANIM ÖRNEKLERİ

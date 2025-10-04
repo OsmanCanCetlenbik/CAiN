@@ -7,7 +7,7 @@ import PrimaryButton from '../components/PrimaryButton';
 import { colors, radius, spacing, typography, shadows } from '../theme';
 import * as ImagePicker from 'expo-image-picker';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../../App';
+import type { RootStackParamList } from '../types/navigation';
 
 const { width } = Dimensions.get('window');
 

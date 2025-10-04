@@ -1,12 +1,14 @@
 import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, ViewStyle, Animated } from 'react-native';
+import { View, StyleSheet, ViewStyle, Animated, type StyleProp } from 'react-native';
 import { colors, radius } from '../theme';
 
-type Props = { 
-  style?: ViewStyle;
+type DimensionValue = NonNullable<ViewStyle['width']>;
+
+type Props = {
+  style?: StyleProp<ViewStyle>;
   animated?: boolean;
-  width?: number | string;
-  height?: number | string;
+  width?: DimensionValue;
+  height?: DimensionValue;
   borderRadius?: number;
 };
 
@@ -55,7 +57,7 @@ export default function Skeleton({
           width,
           height,
           borderRadius: borderRadius ?? radius.md,
-        },
+        } as ViewStyle,
         animatedStyle,
         style
       ]} 

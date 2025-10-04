@@ -57,7 +57,7 @@ export default function ResultsScreen({ route, navigation }: Props) {
       const res = await generateImage({ imageUri, preset });
       if (cancelled) return;
 
-      if (res.ok && res.url) {
+      if (res.ok) {
         setResultUrl(res.url);
 
         // 3) Geçmişe kaydet
@@ -181,7 +181,7 @@ export default function ResultsScreen({ route, navigation }: Props) {
                     const results: string[] = [];
                     for (let i = 0; i < 4; i++) {
                       const r = await generateImage({ imageUri, preset });
-                      if (r.ok && r.url) results.push(r.url);
+                      if (r.ok) results.push(r.url);
                     }
                     setVariantUrls(results);
                   } catch (e) {
