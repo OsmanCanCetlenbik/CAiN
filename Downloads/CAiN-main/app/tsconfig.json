@@ -17,6 +17,7 @@
     "paths": {
       "expo": ["src/types/stubs/expo"],
       "expo-file-system": ["src/types/stubs/expo-file-system"],
+      "expo-constants": ["src/types/stubs/expo-constants"],
       "@supabase/supabase-js": ["src/types/stubs/supabase-js"]
     }
   },
