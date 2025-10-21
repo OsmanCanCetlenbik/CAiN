@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from './AuthContext';
 import { supabase } from '../services/supabase';
@@ -24,7 +24,7 @@ type HistoryCtx = {
 
 const HistoryContext = createContext<HistoryCtx | null>(null);
 
-export function HistoryProvider({ children }: { children: ReactNode }) {
+export function HistoryProvider({ children }: { children?: ReactNode }) {
   const { user } = useAuth();
   const [items, setItems] = useState<HistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,7 +73,7 @@ export function HistoryProvider({ children }: { children: ReactNode }) {
 
   const persist = async (next: HistoryItem[] | ((prev: HistoryItem[]) => HistoryItem[])) => {
     if (typeof next === 'function') {
-      setItems(prev => {
+      setItems((prev: HistoryItem[]) => {
         const computed = (next as (p: HistoryItem[]) => HistoryItem[])(prev);
         AsyncStorage.setItem(key, JSON.stringify(computed));
         return computed;
@@ -121,15 +121,15 @@ export function HistoryProvider({ children }: { children: ReactNode }) {
 
   const remove: HistoryCtx['remove'] = async (id) => {
     try { if (user) { await supabase.from('history').delete().eq('id', id).throwOnError(); } } catch {}
-    await persist(items.filter(i => i.id !== id));
+    await persist(items.filter((i: HistoryItem) => i.id !== id));
   };
 
   const toggleFavorite: HistoryCtx['toggleFavorite'] = async (id) => {
-    const next = items.map(i => i.id === id ? { ...i, favorite: !i.favorite } : i);
+    const next = items.map((i: HistoryItem) => (i.id === id ? { ...i, favorite: !i.favorite } : i));
     await persist(next);
     try { 
       if (user) { 
-        const fav = next.find(i => i.id === id)?.favorite ?? false;
+        const fav = next.find((i: HistoryItem) => i.id === id)?.favorite ?? false;
         await supabase.from('history').update({ favorite: fav }).eq('id', id).throwOnError();
       }
     } catch {}

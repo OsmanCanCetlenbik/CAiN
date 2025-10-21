@@ -10,6 +10,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { useHistoryList } from '../state/HistoryContext';
+import type { HistoryItem } from '../state/HistoryContext';
 import { useAuth } from '../state/AuthContext';
 import { colors, spacing, typography, radius, shadows } from '../theme';
 
@@ -95,8 +96,8 @@ export default function HistoryScreen() {
 
       <FlatList
         data={items}
-        keyExtractor={i => i.id}
-        renderItem={({ item }) => (
+        keyExtractor={(i: HistoryItem) => i.id}
+        renderItem={({ item }: { item: HistoryItem }) => (
           <View style={styles.card}>
             <View style={styles.imageRow}>
               <View style={styles.imageContainer}>

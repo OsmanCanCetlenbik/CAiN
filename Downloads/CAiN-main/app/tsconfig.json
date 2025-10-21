@@ -1,6 +1,34 @@
 {
-  "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "strict": true
-  }
+    "target": "es2019",
+    "module": "esnext",
+    "lib": ["es2019", "dom"],
+    "jsx": "react-native",
+    "moduleResolution": "bundler",
+    "baseUrl": ".",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "paths": {
+      "expo": ["src/types/stubs/expo"],
+      "expo-file-system": ["src/types/stubs/expo-file-system"],
+      "expo-constants": ["src/types/stubs/expo-constants"],
+      "expo-image-picker": ["src/types/stubs/expo-image-picker"],
+      "expo-crypto": ["src/types/stubs/expo-crypto"],
+      "react": ["src/types/stubs/react"],
+      "react-native": ["src/types/stubs/react-native"],
+      "react-native-safe-area-context": ["src/types/stubs/react-native-safe-area-context"],
+      "react-native-adapty": ["src/types/stubs/react-native-adapty"],
+      "@react-native-async-storage/async-storage": ["src/types/stubs/async-storage"],
+      "@react-navigation/native": ["src/types/stubs/react-navigation-native"],
+      "@react-navigation/native-stack": ["src/types/stubs/react-navigation-native-stack"],
+      "@supabase/supabase-js": ["src/types/stubs/supabase-js"]
+    }
+  },
+  "include": ["./**/*"],
+  "exclude": ["node_modules", "babel.config.js", "metro.config.js", "jest.config.js"]
 }

@@ -99,7 +99,7 @@ function AppNavigator() {
       <Stack.Screen
         name="Upload"
         component={UploadScreen}
-        options={({ navigation }) => ({
+        options={({ navigation }: { navigation: any }) => ({
           title: t('nav_upload'),
           headerLeft: () => (
             <TouchableOpacity

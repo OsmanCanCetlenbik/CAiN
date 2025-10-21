@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from './AuthContext';
 
@@ -15,7 +15,7 @@ const KEY_BASE = 'cain/credits/';
 const INITIAL_REGISTERED = 3; // kayıtlı kullanıcıya 3 deneme
 const INITIAL_GUEST = 1;      // misafire 1 deneme
 
-export function CreditsProvider({ children }: { children: ReactNode }) {
+export function CreditsProvider({ children }: { children?: ReactNode }) {
   const { user } = useAuth();
   const [credits, setCredits] = useState<number>(0);
   const [loading, setLoading] = useState(true);
